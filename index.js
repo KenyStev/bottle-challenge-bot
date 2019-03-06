@@ -9,7 +9,7 @@ const commands = [
     [' show pendings', showPendingsHandler, '(show the ones who are pending to challenge)'],
     [' next', nextHandler, '(move the challenge to the next user)', '*just the challenged user can excecute it'],
     [' skip', skipHandler, '(add the current user to a skipped list and move challenge to the next one)'],
-    [' unskip', unskipHandler, '(reset skipped list to pending again)'],
+    [' unskip all', unskipHandler, '(reset skipped list to pending again)'],
     [' commands', commandsHandler, '(show list of commands)'],
 ]
 let stacks = {
@@ -105,24 +105,27 @@ function challengeHandler({stacks, docRef, channel}) {
 // Add Challengee Handler
 function addHandler({stacks, docRef, channel, message}) {
     const { pending, committed } = stacks;
-    const [toAdd] = message.trim().split(' ');
-    console.log(toAdd, validUserTag(toAdd));
-    if (!validUserTag(toAdd)) {
-        bot.postMessage(channel, 'Just @user-tag is valid.')
-        return;
-    }
-    if(pending.filter(t => t === toAdd).length > 0 || committed.filter(t => t === toAdd).length > 0){
-        bot.postMessage(channel, `${toAdd} is already added.`);
-    } else {
-        pending.unshift(toAdd);
-        setStacks(docRef, stacks)
-        .then(() => {
-            bot.postMessage(channel, `${toAdd} successfully added.`);
-        })
-        .catch(err => {
-            bot.postMessage(channel, `${toAdd} has not been added (error): ${err}.`);
-        });
-    }
+    const toAddUsers = message.trim().split(' ');
+    toAddUsers.forEach(toAdd => {
+        console.log(toAdd, validUserTag(toAdd));
+        const validTag = validUserTag(toAdd);
+        onlyUserTag(!validTag);
+        if (!validTag)return;
+
+        if(pending.filter(t => t === toAdd).length > 0 || committed.filter(t => t === toAdd).length > 0){
+            bot.postMessage(channel, `${toAdd} is already added.`);
+        } else {
+            pending.unshift(toAdd);
+            setStacks(docRef, stacks)
+            .then(() => {
+                bot.postMessage(channel, `${toAdd} successfully added.`);
+            })
+            .catch(err => {
+                bot.postMessage(channel, `${toAdd} has not been added (error): ${err}.`);
+            });
+        }
+    });
+
 }
 
 function removeHandler({stacks, docRef, channel, message}) {
@@ -255,4 +258,10 @@ function setStacks(docRef, stacks) {
 function validUserTag(user) {
     const regx = /<@.*>/i;
     return regx.test(user);
+}
+
+function onlyUserTag(show, toAdd) {
+    if (show) {
+        bot.postMessage(channel, `Invalid ${toAdd}, just @user-tag is valid.`)
+    }
 }
