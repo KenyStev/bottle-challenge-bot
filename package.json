@@ -9,7 +9,6 @@
   "author": "Kevin J. Estevez",
   "license": "MIT",
   "dependencies": {
-    "axios": "^0.18.0",
     "firebase": "^5.8.5",
     "slackbots": "^1.2.0"
   }

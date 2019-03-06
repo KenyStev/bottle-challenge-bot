@@ -1,5 +1,4 @@
 const SlackBot = require('slackbots');
-const axios = require('axios');
 const firebase = require('firebase');
 
 const commands = [
